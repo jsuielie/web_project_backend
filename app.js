@@ -1,11 +1,11 @@
 const express = require("express");
 const mysql = require("mysql");
 const bodyParser = require("body-parser");
+const Aws = require('aws-sdk');
 var multer = require("multer");
 const { response } = require("express");
 const app = express();
 const port = 5000;
-var upload = multer();
 require('dotenv').config();
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,6 +21,11 @@ const con = mysql.createConnection(
     }
 )
 con.connect();
+
+const s3 = new Aws.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
+})
 
 app.get("/get-cards/", (req, res) => {
     let boardId = req.query.boardId;
@@ -72,23 +77,84 @@ app.get("/get-board/", (req, res) => {
         let [board] = result;
         console.log(`get board ${boardId}: title is ${board.title} and createTime is ${board.createTime}`);
         let responseContent = {
-            "title": board.title,
-            "createTime": board.createTime
+            title: board.title,
+            createTime: board.createTime
         };
         res.json(responseContent);
     })
 });
 
+const storage = multer.memoryStorage({
+    destination: function (req, file, cb) {
+        cb(null, '')
+    }
+})
+
+const filefilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+        cb(null, true)
+    }
+    else {
+        cb(null, false)
+    }
+}
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 1000000 },
+    fileFilter: filefilter
+});
+
+app.post("/create-card", upload.single("cardImage"), async (req, res) => {
+    const s3Params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: req.file.originalname,
+        Body: req.file.buffer,
+        ACL: "public-read-write",
+        ContentType: "image/jpeg"
+    };
+
+    s3.upload(s3Params, (error, data) => {
+        if (error) {
+            res.status(500).json({ message: "Something wrong when the card is being created..." })
+        }
+        let imageUrl = data.Location;
+        let queryString = `
+        INSERT INTO card (
+            message,
+            boardId,
+            senderLastName,
+            senderFirstName,
+            imageUrl
+        ) VALUES ?` ;
+        con.query(queryString, [[[
+            req.body.message,
+            req.body.boardId,
+            req.body.senderLastName,
+            req.body.senderFirstName,
+            imageUrl
+        ]]], (err, result, fields) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Something wrong when the card is being created..." });
+            }
+            let responseContent = { cardId: result.insertId };
+            res.json(responseContent);
+        })
+    })
+});
+
+
 app.post("/create-board", upload.array(), (req, res) => {
     let queryString = `
         INSERT INTO board
-            (title) VALUES ?`;    
+            (title) VALUES ?`;
     con.query(queryString, [[[req.body.title]]], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the board are being created..." });
         }
-        let responseContent = {boardId: result.insertId};
+        let responseContent = { boardId: result.insertId };
         res.json(responseContent);
     })
 });
