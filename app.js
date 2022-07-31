@@ -113,34 +113,43 @@ app.post("/create-card", upload.single("cardImage"), async (req, res) => {
         ACL: "public-read-write",
         ContentType: "image/jpeg"
     };
-
+    /*
     s3.upload(s3Params, (error, data) => {
         if (error) {
             res.status(500).json({ message: "Something wrong when the card is being created..." })
         }
         let imageUrl = data.Location;
-        let queryString = `
-        INSERT INTO card (
-            message,
-            boardId,
-            senderLastName,
-            senderFirstName,
-            imageUrl
-        ) VALUES ?` ;
-        con.query(queryString, [[[
-            req.body.message,
-            req.body.boardId,
-            req.body.senderLastName,
-            req.body.senderFirstName,
-            imageUrl
-        ]]], (err, result, fields) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({ message: "Something wrong when the card is being created..." });
-            }
-            let responseContent = { cardId: result.insertId };
-            res.json(responseContent);
-        })
+    })
+    */
+    let storedImage;
+    try {
+        storedImage = await s3.upload(s3Params).promise();
+    }
+    catch (error) {
+        console.log(error);
+    }
+
+    let queryString = `
+    INSERT INTO card (
+        message,
+        boardId,
+        senderLastName,
+        senderFirstName,
+        imageUrl
+    ) VALUES ?` ;
+    con.query(queryString, [[[
+        req.body.message,
+        req.body.boardId,
+        req.body.senderLastName,
+        req.body.senderFirstName,
+        storedImage.Location
+    ]]], (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Something wrong when the card is being created..." });
+        }
+        let responseContent = { cardId: result.insertId };
+        res.json(responseContent);
     })
 });
 
