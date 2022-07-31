@@ -1,31 +1,24 @@
-const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
 const Aws = require('aws-sdk');
-var multer = require("multer");
+const bodyParser = require("body-parser");
+const express = require("express");
+
 const { response } = require("express");
+const con = require("./db");
+const {createMulter} = require("./util");
+
 const app = express();
 const port = 5000;
 require('dotenv').config();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-
-const con = mysql.createConnection(
-    {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_DATABASE
-    }
-)
 con.connect();
-
 const s3 = new Aws.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
 })
+const upload = createMulter(["image/jpeg", "image/jpg"])
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get("/get-cards/", (req, res) => {
     let boardId = req.query.boardId;
@@ -84,27 +77,6 @@ app.get("/get-board/", (req, res) => {
     })
 });
 
-const storage = multer.memoryStorage({
-    destination: function (req, file, cb) {
-        cb(null, '')
-    }
-})
-
-const filefilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
-        cb(null, true)
-    }
-    else {
-        cb(null, false)
-    }
-}
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1000000 },
-    fileFilter: filefilter
-});
-
 app.post("/create-card", upload.single("cardImage"), async (req, res) => {
     const s3Params = {
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -113,14 +85,7 @@ app.post("/create-card", upload.single("cardImage"), async (req, res) => {
         ACL: "public-read-write",
         ContentType: "image/jpeg"
     };
-    /*
-    s3.upload(s3Params, (error, data) => {
-        if (error) {
-            res.status(500).json({ message: "Something wrong when the card is being created..." })
-        }
-        let imageUrl = data.Location;
-    })
-    */
+
     let storedImage;
     try {
         storedImage = await s3.upload(s3Params).promise();
@@ -169,7 +134,6 @@ app.post("/create-board", upload.array(), (req, res) => {
 });
 
 
-// set up an application server
 app.listen(port, (err) => {
     if (err) console.log("Error is occurring in the server setup!");
     console.log(`app is listening on the port ${port}.`);
