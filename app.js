@@ -19,62 +19,6 @@ const s3 = new Aws.S3({
     secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
 })
 const upload = createMulter(["image/jpeg", "image/jpg"])
-/*
-const strategy = new GoogleStrategy(
-    {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:5000/oauth/redirect/google",
-        scope: ["profile"],
-        state: true
-    },
-    (accessToken, refreshToken, profile, cb) => {
-        let findUserQueryString = `
-        SELECT provider,
-            userId,
-            userLastName,
-            userFirstName,
-            createTime
-        FROM users 
-        WHERE provider = ? AND userId = ?`;
-
-        let createUserQueryString = `
-        INSERT INTO users (
-            userId,
-            userLastName,
-            userFirstName,
-            provider,
-        ) VALUES (?, ?, ?, ?)`;
-
-        con.query(findUserQueryString, [[['https://accounts.google.com', profile.id]]], (err, result, fields) => {
-            if (err) {
-                console.log(err);
-                return cb(err);
-            }
-            else if (!result) {
-                return cb(null, false, {message: "Incorrect User Name or Password."});
-            }
-            else {
-                con.query(createUserQueryString, [[['https://accounts.google.com', profile.id, profile.name.familyName, profile.name.givenName]]], (err, result, fields) => {
-                    if (err) {
-                        console.log(err);
-                        return cb(err);
-                    }
-                    else {
-                        let user = {
-                            userId: profile.id,
-                            userLastName: profile.name.familyName,
-                            userFirstName: profile.name.givenName
-                        }
-                        return cb(null, user);
-                    }
-                });
-            }
-        });
-    }    
-)
-passport.use(strategy);
-*/
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -93,7 +37,7 @@ app.get("/get-cards/", (req, res) => {
             imageUrl 
         FROM card 
         WHERE boardId = ?`;
-    con.query(queryString, [[[boardId]]], (err, result, fields) => {
+    con.query(queryString, [boardId], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the cards are being retrieved..." });
@@ -124,7 +68,7 @@ app.get("/get-board/", (req, res) => {
             createTime
         FROM board 
         WHERE boardId = ?`;
-    con.query(queryString, [[[boardId]]], (err, result, fields) => {
+    con.query(queryString, [boardId], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the board are being retrieved..." });
@@ -164,13 +108,13 @@ app.post("/create-card", upload.single("cardImage"), async (req, res) => {
         senderFirstName,
         imageUrl
     ) VALUES ?` ;
-    con.query(queryString, [[[
+    con.query(queryString, [
         req.body.message,
         req.body.boardId,
         req.body.senderLastName,
         req.body.senderFirstName,
         storedImage.Location
-    ]]], (err, result, fields) => {
+    ], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the card is being created..." });
@@ -185,7 +129,7 @@ app.post("/create-board", upload.array(), (req, res) => {
     let queryString = `
         INSERT INTO board
             (title) VALUES ?`;
-    con.query(queryString, [[[req.body.title]]], (err, result, fields) => {
+    con.query(queryString, [req.body.title], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the board are being created..." });
@@ -196,39 +140,66 @@ app.post("/create-board", upload.array(), (req, res) => {
 });
 
 
-/*
-app.get("/login/google", passport.authenticate("google"));
-app.post("/oauth2/redirect/google",
-    passport.authenticate("google", {failureMessage: true}),
-    (req, res) => {
-        console.log(res);
-        res.end();
-    })
-*/
+app.get("/login/google", passport.authenticate("google", { scope: ["profile"] }));
+app.get("/google/callback", passport.authenticate("google", {
+    successRedirect: "/success",
+}));
 
-app.get("/login/google",
-    passport.authenticate("google", { scope: ["profile"] }))
 
-app.get("/google/callback",
-    passport.authenticate("google", {
-        successRedirect: "/success",
-        failureRedirect: "/failure"
-    })
+let loginHandler = (req, res, next) => {
+    req.user ? next() : res.status(401).json({message: "unautherized action"})
+}
+app.get("/success", loginHandler, (req, res) => {
+        let findUserQueryString = `
+        SELECT provider,
+            userId,
+            userLastName,
+            userFirstName,
+            createTime
+        FROM users 
+        WHERE provider = ? AND userId = ?`;
+
+        let createUserQueryString = `
+        INSERT INTO users (
+            userId,
+            userLastName,
+            userFirstName,
+            provider,
+            imageUrl
+        ) VALUES (?, ?, ?, ?, ?)`;
+        
+        con.query(findUserQueryString, [req.user.provider, req.user.userId], (err, result) => {
+            if (err) {
+                console.log(req.user.provider, req.user.userId);
+                console.log(err);
+                res.status(500).json({message: "Something wrong when finding the user."})
+            }
+            else if (result.length === 0){
+                con.query(createUserQueryString, [
+                    req.user.userId,
+                    req.user.userLastName,
+                    req.user.userFirstName,
+                    req.user.provider,
+                    req.user.imageUrl
+                ], (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        res.status.json({message: "Something wrong when a new user is being created."});
+                    }
+                    else {
+                        console.log(`New user ${req.user.displayName} has been created.`);
+                        res.send("Hello, new friend.");
+                    }
+                })
+            }
+            else{
+                console.log(result);
+                console.log(`The user ${req.user.displayName} has been found.`);
+                res.send("Hello, stranger.");
+            }
+        })
+    }
 )
-
-app.get("/success", (req, res, next) => {
-    req.user ? next() : res.sendStatus(401);
-    },
-    (req, res) => {
-    console.log("success");
-    console.log(req.user);
-    res.send(`Hello, ${req.user.displayName}.`);
-})
-
-app.get("/failure", (req, res) => {
-    console.log("failure");
-    res.status(401).send("failure");
-})
 
 app.get("/logout", (req, res) => {
     req.logout((err) => {
