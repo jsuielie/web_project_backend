@@ -1,10 +1,13 @@
 const Aws = require('aws-sdk');
 const bodyParser = require("body-parser");
 const express = require("express");
+//const GoogleStrategy = require("passport-google-oauth20");
+const passport = require("passport");
+const session = require("express-session");
 
-const { response } = require("express");
 const con = require("./db");
-const {createMulter} = require("./util");
+const { createMulter } = require("./util");
+require("./googleAuth");
 
 const app = express();
 const port = 5000;
@@ -16,9 +19,68 @@ const s3 = new Aws.S3({
     secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
 })
 const upload = createMulter(["image/jpeg", "image/jpg"])
+/*
+const strategy = new GoogleStrategy(
+    {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "http://localhost:5000/oauth/redirect/google",
+        scope: ["profile"],
+        state: true
+    },
+    (accessToken, refreshToken, profile, cb) => {
+        let findUserQueryString = `
+        SELECT provider,
+            userId,
+            userLastName,
+            userFirstName,
+            createTime
+        FROM users 
+        WHERE provider = ? AND userId = ?`;
+
+        let createUserQueryString = `
+        INSERT INTO users (
+            userId,
+            userLastName,
+            userFirstName,
+            provider,
+        ) VALUES (?, ?, ?, ?)`;
+
+        con.query(findUserQueryString, [[['https://accounts.google.com', profile.id]]], (err, result, fields) => {
+            if (err) {
+                console.log(err);
+                return cb(err);
+            }
+            else if (!result) {
+                return cb(null, false, {message: "Incorrect User Name or Password."});
+            }
+            else {
+                con.query(createUserQueryString, [[['https://accounts.google.com', profile.id, profile.name.familyName, profile.name.givenName]]], (err, result, fields) => {
+                    if (err) {
+                        console.log(err);
+                        return cb(err);
+                    }
+                    else {
+                        let user = {
+                            userId: profile.id,
+                            userLastName: profile.name.familyName,
+                            userFirstName: profile.name.givenName
+                        }
+                        return cb(null, user);
+                    }
+                });
+            }
+        });
+    }    
+)
+passport.use(strategy);
+*/
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(session({ secret: "cats" }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.get("/get-cards/", (req, res) => {
     let boardId = req.query.boardId;
@@ -133,6 +195,48 @@ app.post("/create-board", upload.array(), (req, res) => {
     })
 });
 
+
+/*
+app.get("/login/google", passport.authenticate("google"));
+app.post("/oauth2/redirect/google",
+    passport.authenticate("google", {failureMessage: true}),
+    (req, res) => {
+        console.log(res);
+        res.end();
+    })
+*/
+
+app.get("/login/google",
+    passport.authenticate("google", { scope: ["profile"] }))
+
+app.get("/google/callback",
+    passport.authenticate("google", {
+        successRedirect: "/success",
+        failureRedirect: "/failure"
+    })
+)
+
+app.get("/success", (req, res, next) => {
+    req.user ? next() : res.sendStatus(401);
+    },
+    (req, res) => {
+    console.log("success");
+    console.log(req.user);
+    res.send(`Hello, ${req.user.displayName}.`);
+})
+
+app.get("/failure", (req, res) => {
+    console.log("failure");
+    res.status(401).send("failure");
+})
+
+app.get("/logout", (req, res) => {
+    req.logout((err) => {
+        if (err) { res.status(500).send("Something went wrong.") }
+        req.session.destroy();
+        res.send("bye");
+    })
+})
 
 app.listen(port, (err) => {
     if (err) console.log("Error is occurring in the server setup!");
