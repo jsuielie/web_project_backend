@@ -22,7 +22,7 @@ const upload = createMulter(["image/jpeg", "image/jpg"])
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(session({ secret: "cats" }));
+app.use(session({ secret: "cats", cookie: { maxAge: 1000000 } }));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -32,12 +32,11 @@ app.get("/get-cards/", (req, res) => {
         SELECT cardId,
             message,
             createTime,
-            senderLastName,
-            senderFirstName,
+            senderId,
             imageUrl 
         FROM card 
         WHERE boardId = ?`;
-    con.query(queryString, [boardId], (err, result, fields) => {
+    con.query(queryString, [[[boardId]]], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the cards are being retrieved..." });
@@ -49,8 +48,7 @@ app.get("/get-cards/", (req, res) => {
                         cardId: obj.cardId,
                         message: obj.message,
                         createTime: obj.createTime,
-                        senderLastName: obj.senderLastName,
-                        senderFirstName: obj.senderFirstName,
+                        senderId: obj.senderId,
                         imageUrl: obj.imageUrl
                     }
                 }
@@ -59,7 +57,7 @@ app.get("/get-cards/", (req, res) => {
         res.json(responseContent);
     })
 });
-
+/*
 app.get("/get-board/", (req, res) => {
     let boardId = req.query.boardId;
     let queryString = `
@@ -82,8 +80,11 @@ app.get("/get-board/", (req, res) => {
         res.json(responseContent);
     })
 });
+*/
 
-app.post("/create-card", upload.single("cardImage"), async (req, res) => {
+app.post("/create-card", upload.single("cardImage"), (req, res, next) => {
+    req.file ? next() : res.json({ message: "Card creation is failed due to no file selected." });
+}, async (req, res) => {
     const s3Params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: req.file.originalname,
@@ -103,18 +104,18 @@ app.post("/create-card", upload.single("cardImage"), async (req, res) => {
     let queryString = `
     INSERT INTO card (
         message,
-        boardId,
-        senderLastName,
-        senderFirstName,
-        imageUrl
+        userId,
+        senderId,
+        imageUrl,
+        boardId
     ) VALUES ?` ;
-    con.query(queryString, [
+    con.query(queryString, [[[
         req.body.message,
+        req.body.userId,
+        req.body.senderId,
+        storedImage.Location,
         req.body.boardId,
-        req.body.senderLastName,
-        req.body.senderFirstName,
-        storedImage.Location
-    ], (err, result, fields) => {
+    ]]], (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Something wrong when the card is being created..." });
@@ -124,7 +125,7 @@ app.post("/create-card", upload.single("cardImage"), async (req, res) => {
     })
 });
 
-
+/* 
 app.post("/create-board", upload.array(), (req, res) => {
     let queryString = `
         INSERT INTO board
@@ -138,7 +139,94 @@ app.post("/create-board", upload.array(), (req, res) => {
         res.json(responseContent);
     })
 });
+*/
 
+app.post("/edit-card", upload.single("cardImage"), (req, res, next) => {
+    if (!req.session) {
+        console.log("the user has not logged in or the cookie has been expired.");
+        res.redirect("/login/google");
+    }
+    else {
+        let findCardQueryString = `
+        SELECT cardId,
+            senderId,
+            boardId
+        FROM card 
+        WHERE cardId = ?`;
+        con.query(findCardQueryString, [[[req.query.cardId]]], (err, result, fields) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send("Something went wrong when the card was being edited.");
+            }
+            else if (result.length === 0) {
+                console.log(`Card with ID of ${req.query.cardId} does not exist.`);
+                res.status(403).json({ message: "The card does not exist." })
+            }
+            else if (result[0].senderId === req.session.passport.user.userId) {
+                req.body.boardId = result[0].boardId;
+                next();
+            }
+            else {
+                console.log("The user is unauthorized to edit the card.");
+                res.status(401).json({ message: "unauthorized action" });
+            }
+        })
+    }
+}, (req, res, next) => {
+    req.body.message ? next() : res.status(403).json({ message: "Some modification must been done." });
+
+}, (req, res, next) => {
+    let editCardMessageQueryString = `
+    UPDATE card
+    SET message = ?
+    WHERE cardId = ?`;
+
+    con.query(editCardMessageQueryString, [req.body.message, req.query.cardId], (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: "Something went wrong when the card was being updated..." });
+        }
+        if (req.file) {
+            next();
+        }
+        else {
+            console.log("Card content has been modified, but image is remain the same.")
+            res.status(200).redirect(`/get-cards/?boardId=${req.body.boardId}`);
+        }
+    })
+}, async (req, res) => {
+    const s3Params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: req.file.originalname,
+        Body: req.file.buffer,
+        ACL: "public-read-write",
+        ContentType: "image/jpeg"
+    };
+
+    let storedImage;
+    try {
+        storedImage = await s3.upload(s3Params).promise();
+    }
+    catch (error) {
+        console.log(error);
+    }
+
+    let editCardImageQueryString = `
+    UPDATE card
+    SET imageUrl = ?
+    WHERE cardId = ?`;;
+    con.query(editCardImageQueryString, [
+        storedImage.Location,
+        req.query.cardId,
+    ], (error, result) => {
+        if (error) {
+            console.log(error);
+            res.status(500).json({ message: "Something went wrong when the card was being updated..." });
+        }
+        console.log("New image has been added.");
+        res.status(200).redirect(`/get-cards/?boardId=${req.body.boardId}`);
+    })
+});
 
 app.get("/login/google", passport.authenticate("google", { scope: ["profile"] }));
 app.get("/google/callback", passport.authenticate("google", {
@@ -147,58 +235,61 @@ app.get("/google/callback", passport.authenticate("google", {
 
 
 let loginHandler = (req, res, next) => {
-    req.user ? next() : res.status(401).json({message: "unautherized action"})
+    req.user ? next() : res.status(401).json({ message: "unauthorized action" })
 }
 app.get("/success", loginHandler, (req, res) => {
-        let findUserQueryString = `
+    let findUserQueryString = `
         SELECT provider,
             userId,
             userLastName,
             userFirstName,
             createTime
         FROM users 
-        WHERE provider = ? AND userId = ?`;
+        WHERE provider = ? AND userIdInProvider = ?`;
 
-        let createUserQueryString = `
+    let createUserQueryString = `
         INSERT INTO users (
-            userId,
+            userIdInProvider,
             userLastName,
             userFirstName,
+            displayName,
             provider,
             imageUrl
-        ) VALUES (?, ?, ?, ?, ?)`;
-        
-        con.query(findUserQueryString, [req.user.provider, req.user.userId], (err, result) => {
-            if (err) {
-                console.log(req.user.provider, req.user.userId);
-                console.log(err);
-                res.status(500).json({message: "Something wrong when finding the user."})
-            }
-            else if (result.length === 0){
-                con.query(createUserQueryString, [
-                    req.user.userId,
-                    req.user.userLastName,
-                    req.user.userFirstName,
-                    req.user.provider,
-                    req.user.imageUrl
-                ], (err, result) => {
-                    if (err) {
-                        console.log(err);
-                        res.status.json({message: "Something wrong when a new user is being created."});
-                    }
-                    else {
-                        console.log(`New user ${req.user.displayName} has been created.`);
-                        res.send("Hello, new friend.");
-                    }
-                })
-            }
-            else{
-                console.log(result);
-                console.log(`The user ${req.user.displayName} has been found.`);
-                res.send("Hello, stranger.");
-            }
-        })
-    }
+        ) VALUES ?`;
+
+    con.query(findUserQueryString, [req.user.provider, req.user.userIdInProvider], (err, result) => {
+        if (err) {
+            console.log(req.user.provider, req.user.userId);
+            console.log(err);
+            res.status(500).json({ message: "Something wrong when finding the user." })
+        }
+        else if (result.length === 0) {
+            con.query(createUserQueryString, [[[
+                req.user.userIdInProvider,
+                req.user.lastName,
+                req.user.firstName,
+                req.user.displayName,
+                req.user.provider,
+                req.user.imageUrl
+            ]]], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).json({ message: "Something wrong when a new user is being created." });
+                }
+                else {
+                    console.log(`New user ${req.user.displayName} has been created.\n Its user ID in the mySQL is ${result.insertId}.`);
+                    req.session.passport.user.userId = result.insertId;
+                    res.send("Hello, new friend.");
+                }
+            })
+        }
+        else {
+            req.session.passport.user.userId = result[0].userId;
+            console.log(`The user ${req.user.displayName} has been found.\n`);
+            res.send(`Hello, stranger.`);
+        }
+    })
+}
 )
 
 app.get("/logout", (req, res) => {

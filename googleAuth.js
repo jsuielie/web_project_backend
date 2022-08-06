@@ -11,7 +11,7 @@ passport.use(new GoogleStrategy({
     passReqToCallback: true
     },
     function verify(req, accessToken, refreshToken, profile, done){
-        console.log(profile);
+        //console.log(profile);
         return done(null, profile);
     }
 ))
@@ -19,10 +19,10 @@ passport.use(new GoogleStrategy({
 passport.serializeUser((user, done) => {
     let userInfo = {
         provider: user.provider,
-        userId: user.id,
+        userIdInProvider: user.id,
         displayName: user.displayName,
-        userLastName: user.name.familyName,
-        userFirstName: user.name.givenName,
+        lastName: user.name.familyName,
+        firstName: user.name.givenName,
         imageUrl: user.photos[0].value
     }
     done(null, userInfo);
