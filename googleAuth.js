@@ -19,7 +19,7 @@ passport.use(new GoogleStrategy({
 passport.serializeUser((user, done) => {
     let userInfo = {
         provider: user.provider,
-        userIdInProvider: user.id,
+        userId: user.provider + user.id,
         displayName: user.displayName,
         lastName: user.name.familyName,
         firstName: user.name.givenName,
