@@ -5,7 +5,7 @@ name: elastic.beanstalk.dev CD
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ master ]
     
 jobs:
   build:
