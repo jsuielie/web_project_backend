@@ -15,6 +15,7 @@ const { serializeAndDeserialize } = require("./passportSerialization");
 const app = express();
 if (process.env.NODE_ENV.trim() === "dev") {
     require('dotenv').config();
+    console.log(`The present env is ${process.env.NODE_ENV.trim()}, and the app is listening at port ${process.env.PORT}`);
 }
 
 const con = mysql.createConnection({
@@ -415,9 +416,9 @@ app.get("/logout", (req, res) => {
 })
 
 
-app.listen(8080, (err) => {
+app.listen(process.env.PORT, (err) => {
     if (err) console.log("Error is occurring in the server setup!");
-    console.log(`app is listening on the port ${8080}.`);
+    console.log(`app is listening on the port ${process.env.PORT}.`);
     if (process.env.NODE_ENV.trim() == "dev") {
         console.log("dev environment");
     }
