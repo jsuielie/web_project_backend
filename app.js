@@ -2,27 +2,39 @@ const Aws = require('aws-sdk');
 const bcrypt = require("bcryptjs");
 const bodyParser = require("body-parser");
 const express = require("express");
-//const GoogleStrategy = require("passport-google-oauth20");
+const GoogleStrategy = require("passport-google-oauth20");
+const mysql = require("mysql");
 const passport = require("passport");
 const session = require("express-session");
 
-const con = require("./db");
 const { createMulter } = require("./util");
-require("./googleAuth");
+const { googleAuth } = require("./googleAuth");
+const { localAuth } = require("./localAuth");
+const { serializeAndDeserialize } = require("./passportSerialization");
 
 const app = express();
-const port = 5000;
-require('dotenv').config();
+if (process.env.NODE_ENV.trim() === "dev") {
+    require('dotenv').config();
+}
 
+const con = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    port: process.env.DB_PORT,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
+});
 con.connect();
+localAuth(con);
+googleAuth(process.env.NODE_ENV);
+serializeAndDeserialize();
+
 const s3 = new Aws.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
 })
 const upload = createMulter(["image/jpeg", "image/jpg"])
-const sessionChecker = (req, res, next) => {
-    req.session ? next() : res.status(401).json({ message: "authorized action" })
-};
+const sessionChecker = (req, res, next) => { req.session ? next() : res.status(401).json({ message: "authorized action" }) };
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -31,6 +43,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+app.get("/", (req, res) => {
+    res.json({ message: "good!!" });
+});
 
 app.get("/get-cards/", (req, res) => {
     let boardId = req.query.boardId;
@@ -137,6 +152,7 @@ app.post("/create-card", sessionChecker, upload.single("cardImage"), (req, res, 
 
 
 app.post("/create-board", sessionChecker, upload.array(), (req, res) => {
+    console.log(req.session);
     let queryString = `
         INSERT INTO board (
             title,
@@ -262,12 +278,15 @@ app.delete("/delete-card", sessionChecker, (req, res, next) => {
     })
 })
 
+
+
 const localUserChecker = (req, res, next) => {
     con.query(`SELECT * FROM users WHERE userId = ?`, [[[`local` + req.body.userId]]], (error, result) => {
         result.length ? res.status(409).json({ message: `User with ${"local" + req.body.userId} user ID already exists.` }) : next();
     })
 }
 app.post("/local-sign-up", upload.single("userImage"), localUserChecker, async (req, res) => {
+
     const s3Params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: req.file.originalname,
@@ -307,19 +326,25 @@ app.post("/local-sign-up", upload.single("userImage"), localUserChecker, async (
                 console.log(`User with ${"local" + req.body.userId} has been created.`);
                 res.json({ message: `User with ${"local" + req.body.userId} has been created.` });
             }
-        })
-})
+        }
+    )
+
+});
+
 
 app.get("/login/google", passport.authenticate("google", { scope: ["profile"] }));
 app.get("/google/callback", passport.authenticate("google", {
-    successRedirect: "/success",
+    successRedirect: "/google/success",
 }));
+
+app.post("/login/local", upload.none(), passport.authenticate("local", { failureRedirect: "/local/failure", successRedirect: "/local/success" }));
 
 
 let loginHandler = (req, res, next) => {
     req.user ? next() : res.status(401).json({ message: "unauthorized action" })
 }
-app.get("/success", loginHandler, (req, res) => {
+
+app.get("/google/success", loginHandler, (req, res) => {
     let findUserQueryString = `
         SELECT provider,
             userId,
@@ -370,8 +395,16 @@ app.get("/success", loginHandler, (req, res) => {
             res.send(`Hello, stranger.`);
         }
     })
-}
-)
+})
+
+
+app.get("/local/failure", (req, res) => {
+    res.status(401).json({ message: "unauthorized action" });
+});
+
+app.get("/local/success", (req, res) => {
+    res.status(200).json({ message: "Hello, stranger." });
+})
 
 app.get("/logout", (req, res) => {
     req.logout((err) => {
@@ -381,7 +414,14 @@ app.get("/logout", (req, res) => {
     })
 })
 
-app.listen(port, (err) => {
+
+app.listen(8080, (err) => {
     if (err) console.log("Error is occurring in the server setup!");
-    console.log(`app is listening on the port ${port}.`);
+    console.log(`app is listening on the port ${8080}.`);
+    if (process.env.NODE_ENV.trim() == "dev") {
+        console.log("dev environment");
+    }
+    else {
+        console.log("prod environment");
+    }
 })

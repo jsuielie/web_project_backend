@@ -4,7 +4,9 @@
   "description": "a backend project ",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node conChecker.js && node tableChecker.js && node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "set NODE_ENV=dev && node conChecker.js && node tableChecker.js && nodemon app.js"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +22,7 @@
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "yaml": "^2.1.1"
   }
 }
