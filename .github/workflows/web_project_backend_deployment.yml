@@ -23,7 +23,9 @@ jobs:
 
     - run: ls
 
-    - run: cd frontend
+    - run: cd ./frontend
+
+    - run: pwd
 
     - run: ls
 
