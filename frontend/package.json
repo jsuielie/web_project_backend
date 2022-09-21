@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack serve",
-    "build": "set NODE_ENV=prod && webpack",
-    "build-serve": "set NODE_ENV=dev && webpack && cd ../backend && nodemon app.js"
+    "build": "set NODE_ENV=prod && webpack --config webpack.config.js",
+    "build-serve": "set NODE_ENV=dev && webpack  --config webpack.config.js && cd ../backend && nodemon app.js"
   },
   "author": "Elijah",
   "license": "ISC",
