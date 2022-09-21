@@ -32,13 +32,15 @@ jobs:
       run: npm ci
 
     - name: list available scripts for npm
+      working-directory: ./frontend
       run: npm run
 
-    - name: build a react app
+    - name: build a frontend react app
       working-directory: ./frontend
       run: npm run build
 
-    - working-directory: ./frontend
+    - name: move the build to the backend
+      working-directory: ./frontend
       run: mv dist ../backend/dist
 
     - name: Installing NPM in the backend
