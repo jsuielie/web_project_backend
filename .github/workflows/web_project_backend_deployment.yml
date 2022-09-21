@@ -18,13 +18,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - run: cd frontend
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    
-    - run: cd frontend
 
     - name: Installing NPM in the frontend
       run: npm install
@@ -40,8 +40,12 @@ jobs:
     - run: mv dist ../backend/dist
 
     - run: cd ../backend
-#     - run: npm run build --if-present     To be done once you have a test suite ready
-    
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
     - name: Installing NPM in the backend
       run: npm install
       
