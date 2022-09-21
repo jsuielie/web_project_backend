@@ -18,16 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
-    - run: |
-        pwd
-        ls
-        cd ./frontend
-        ls
-
-    - run: pwd
-
-    - run: ls
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
@@ -35,31 +25,31 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Installing NPM in the frontend
+      working-directory: ./frontend
       run: npm install
       
-    - run: npm ci
+    - working-directory: ./frontend
+      run: npm ci
 
     - name: list available scripts for npm
       run: npm run
 
     - name: build a react app
+      working-directory: ./frontend
       run: npm run build
 
-    - run: mv dist ../backend/dist
-
-    - run: cd ../backend
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+    - working-directory: ./frontend
+      run: mv dist ../backend/dist
 
     - name: Installing NPM in the backend
+      working-directory: ./backend
       run: npm install
       
-    - run: npm ci
+    - working-directory: ./backend
+      run: npm ci
 
     - name: Generate deployment package
+      working-directory: ./backend
       run: zip -r deploy.zip * -x "**node_modules**"
       
     - name: Get timestamp
@@ -84,7 +74,7 @@ jobs:
         environment_name: Tutorials-env
         region: ap-southeast-1
         version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
-        deployment_package: deploy.zip
+        deployment_package: ./backend/deploy.zip
 
     - name: Deployed successfully!
       run: echo App deployed to ELB
