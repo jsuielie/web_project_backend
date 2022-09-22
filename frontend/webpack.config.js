@@ -12,6 +12,8 @@ let API_URL = {
 // check environment mode
 let environment = process.env.NODE_ENV.trim() === 'production' ? 'production' : 'development';
 */
+console.log(process.env.NODE_ENV);
+
 module.exports = {
     mode: "production",
     entry: path.join(__dirname, 'src', 'index.js'),

@@ -6,7 +6,7 @@ import Board from "./components/Board";
 import Home from "./components/Home"
 import Layout from "./components/Layout";
 import LocalLogin from "./components/LocalLogin";
-import LocalSignup from "./components/LocalSignUp";
+import LocalSignup from "./components/LocalSignup";
 import NotFound from "./components/NotFound";
 import "./styles.css";
 
