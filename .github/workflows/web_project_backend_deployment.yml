@@ -6,6 +6,9 @@ name: elastic.beanstalk.prod CD
 on:
   push:
     branches: [ master ]
+
+env:
+  NODE_ENV: prod
     
 jobs:
   build:
@@ -23,6 +26,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+
+    - run: echo $NODE_ENV
 
     - name: Installing NPM in the frontend
       working-directory: ./frontend

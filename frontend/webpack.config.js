@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { ProductionQuantityLimits } = require('@mui/icons-material');
-/*
+
 let API_URL = {
     production: JSON.stringify('http://tutorials-env.eba-m9jimr3a.ap-southeast-1.elasticbeanstalk.com'),
     development: JSON.stringify('http://localhost:5000')
@@ -11,11 +11,10 @@ let API_URL = {
 
 // check environment mode
 let environment = process.env.NODE_ENV.trim() === 'production' ? 'production' : 'development';
-*/
+
 console.log(process.env.NODE_ENV);
 
 module.exports = {
-    mode: "production",
     entry: path.join(__dirname, 'src', 'index.js'),
     output: {
         publicPath: "/",
@@ -47,7 +46,7 @@ module.exports = {
             template: path.join(__dirname, "src", "index.html"),
         }),
         new webpack.DefinePlugin({
-            'API_URL': JSON.stringify("http://tutorials-env.eba-m9jimr3a.ap-southeast-1.elasticbeanstalk.com")
+            'API_URL': API_URL[environment]
         })
     ],
 };
