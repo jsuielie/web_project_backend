@@ -6,7 +6,7 @@ function Column(props) {
     
     return(
         <div className="col">
-            {props.cardDataInSingleCol.map((cardData, index) => <SingleCard className="single-card" key={index} cardData={cardData} authenticate={props.authenticate}/>)}
+            {props.cardDataInSingleCol.map((cardData, index) => <SingleCard className="single-card" key={index} cardData={cardData} authenticate={props.authenticate} deleteCardsByCardId={props.deleteCardsByCardId}/>)}
         </div>
     )
 }

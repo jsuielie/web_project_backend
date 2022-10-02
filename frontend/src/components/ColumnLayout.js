@@ -14,7 +14,7 @@ function ColumnLayout(props) {
     const [cardsSepByCol, setCardsSepByCol] = useState(initializeEmptyArray(props.colNum));
 
     useEffect(() => {
-        console.log(cardsSepByCol,props);
+        console.log(cardsSepByCol, props);
         let newCardsSepByCol = initializeEmptyArray(props.colNum);
         
         for (let idx = 0; idx < props.cardsData.length; idx++) {
@@ -34,7 +34,7 @@ function ColumnLayout(props) {
 
     return (
         <div className="column-layout">
-            {cardsSepByCol.map((cardDataInSingleCol, index) => <Column key={index} cardDataInSingleCol={cardDataInSingleCol} authenticate={props.authenticate}/>)}
+            {cardsSepByCol.map((cardDataInSingleCol, index) => <Column key={index} cardDataInSingleCol={cardDataInSingleCol} authenticate={props.authenticate} deleteCardsByCardId={props.deleteCardsByCardId}/>)}
         </div>
     )
 }

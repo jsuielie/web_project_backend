@@ -99,6 +99,7 @@ app.get("/get-cards/", (req, res) => {
             cards: result.map(
                 obj => {
                     return {
+                        boardId: boardId,
                         cardId: obj.cardId,
                         editable: !userId ? false : userId === obj.userId,
                         message: obj.message,
@@ -152,6 +153,40 @@ app.get("/get-board/", (req, res) => {
     })
 });
 
+app.get("/get-board-list", (req, res) => {
+    if (req.session.passport) {
+        userId = req.session.passport.user.userId;
+        let queryString = `
+        SELECT boardId,
+            title,
+            createTime  
+        FROM board
+        WHERE userId = ?`;
+        con.query(queryString, [[[userId]]], (err, result, fields) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Something wrong when the boards are being retrieved..." });
+            }
+
+            let responseContent = {
+                boards: result.map(
+                    obj => {
+                        return {
+                            boardId: obj.boardId,
+                            editable: true,
+                            createTime: obj.createTime,
+                        }
+                    }
+                )
+            }
+
+            res.json(responseContent);
+        })
+    }
+    else {
+        res.status(403).json({ message: "unauthorized action." });
+    }
+})
 
 app.post("/create-card", sessionChecker, upload.single("cardImage"), (req, res, next) => {
     req.file ? next() : res.json({ message: "Card creation is failed due to no file selected." });
@@ -284,7 +319,7 @@ app.post("/edit-card", sessionChecker, upload.single("cardImage"), (req, res, ne
             res.status(500).json({ message: "Something went wrong when the card was being updated..." });
         }
         console.log("New image has been added.");
-        res.status(200).json({ message: "Card content and new image have been modified" });
+        res.status(200).json({ message: "Card content and new image have been modified." });
     })
 });
 
@@ -305,7 +340,7 @@ app.delete("/delete-card", sessionChecker, (req, res, next) => {
         }
         else {
             console.log("unauthorized delete action");
-            res.status(403).json({ message: "The delete action is unauthorized." });
+            res.status(401).json({ message: "The delete action is unauthorized." });
         }
     })
 }, (req, res) => {
@@ -436,7 +471,8 @@ app.get("/google/success", loginHandler, (req, res) => {
         else {
             req.session.passport.user.userId = req.user.userId;
             console.log(`The user ${req.user.displayName} has been found.\n`);
-            res.send(`Hello, stranger.`);
+            res.redirect("/");
+            //res.send(`Hello, stranger.`);
         }
     })
 })
@@ -454,7 +490,7 @@ app.get("/logout", (req, res) => {
     req.logout((err) => {
         if (err) { res.status(500).send("Something went wrong.") }
         req.session.destroy();
-        res.send("bye");
+        res.json({ message: "bye" });
     })
 })
 

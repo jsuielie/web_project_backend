@@ -1,32 +1,21 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import { CardActionArea } from '@mui/material';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import DeleteCard from './DeleteCard';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import moment from 'moment';
-/*
-class SingleCard extends React.Component {
-    render() {
-        return (
-            <div>
-                <div>
-                    {this.props.cardData.Msgs}
-                    {this.props.cardData.CreateTime}
-                    {this.props.cardData.SenderFirstName}
-                    {this.props.cardData.SenderLastName}
-                    {this.props.cardData.ImageURL}
-                </div>
-            </div>
-        )
-    }
-}
-
-export default SingleCard;
-*/
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 export default function SingleCard(props) {
     const date = moment(props.cardData.createTime, "YYYY-MM-DDThh:mm:ss.SSSZ");
@@ -40,71 +29,41 @@ export default function SingleCard(props) {
                         image={props.cardData.imageUrl}
                         alt="green iguana"
                     /> : null}
+                <CardHeader
+        avatar={
+          <Avatar aria-label="recipe">
+            R
+          </Avatar>
+        }
+        title={props.cardData.displayName}
+        subheader={date.format("YYYY/MM/DD")}
+      />
                 <CardContent>
-                    <Typography variant="h5" component="div">
-                        {props.cardData.displayName}
-                    </Typography>
-                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                        {date.format("YYYY/MM/DD")}
-                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                         {props.cardData.message}
                     </Typography>
-                        {props.authenticate && props.cardData.editable ? <div>edit this card</div> : null}
+                </CardContent>
+                <CardContent>
+
+                    {props.authenticate && props.cardData.editable
+                        ? <Stack direction="row" spacing={1}>
+                            <Button variant="outlined" endIcon={<ModeEditIcon />}>
+                                <Link to={"/edit-card-content"} state={{ props: props.cardData }} >Edit</Link>
+                            </Button>
+                            <DeleteCard cardId={props.cardData.cardId} boardId={props.cardData.boardId} deleteCardsByCardId={props.deleteCardsByCardId} />
+                        </Stack>
+                        : <Stack direction="row" spacing={1}>
+                            <Button variant="outlined" disabled color="primary" endIcon={<ModeEditIcon />}>
+                                Edit
+                            </Button>
+                            <Button variant="outlined" disabled color="primary" startIcon={<DeleteIcon />}>
+                                Delete
+                            </Button>
+                        </Stack>}
+
                 </CardContent>
             </Card>
-        </div>
-
-        /*
-                <Card sx={{width: "100%"}}>
-                    <CardMedia
-                        component="img"
-                        height="140"
-                        image={props.cardData.ImageURL}
-                        alt="green iguana"
-                    />
-                        <CardContent>
-                            <Typography variant="h5" component="div">
-                                {props.cardData.SenderFirstName}
-                                {props.cardData.SenderLastName}
-                            </Typography>
-                            <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                {props.cardData.CreateTime}
-                            </Typography>
-                            <Typography variant="body2">
-                                {props.cardData.Msgs}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                    Lizards are a widespread group of squamate reptiles, with over 6,000
-                    species, ranging across all continents except Antarctica
-                  </Typography>
-                        </CardContent>
-                </Card> */
+        </div >
     );
 
 }
-
-/*
-<Card>
-            <CardMedia
-                component="img"
-                height="140"
-                image={props.cardData.ImageURL}
-                alt="green iguana"
-            />
-            <CardActionArea>
-                <CardContent>
-                    <Typography variant="h5" component="div">
-                        {props.cardData.SenderFirstName}
-                        {props.cardData.SenderLastName}
-                    </Typography>
-                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                        {props.cardData.CreateTime}
-                    </Typography>
-                    <Typography variant="body2">
-                        {props.cardData.Msgs}
-                    </Typography>
-                </CardContent>
-            </CardActionArea>
-        </Card>
-*/

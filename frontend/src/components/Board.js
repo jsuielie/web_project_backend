@@ -26,13 +26,21 @@ function Board() {
             })
     }, []);
 
+    function deleteCardsByCardId(cardId) {
+        console.log("delete the card with card ID: ", cardId);
+        console.log(cardsData);
+        let result = cardsData.filter(card => card.cardId !== cardId);
+        console.log(result);
+        setCardsData(result);
+    }
+
 
     return (
         < div className="board">
             <BoardHeader title={boardData.title} />
             {authenticate ? <div className="btn"><Link to={`/add-new-card/${boardId}`}>Add New Card</Link></div> : null}
             <div className="main-layout">
-                <ColumnLayout authenticate={authenticate} cardsData={cardsData} colNum={colNum} />
+                <ColumnLayout authenticate={authenticate} cardsData={cardsData} colNum={colNum} deleteCardsByCardId={deleteCardsByCardId} />
             </div>
         </div >
     )

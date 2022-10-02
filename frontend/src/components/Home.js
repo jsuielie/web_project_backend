@@ -1,8 +1,12 @@
 import React from "react";
+import {useOutletContext} from "react-router-dom";
+import Introduction from "./Introduction";
+import Boards from "./Boards";
 
 function Home() {
+    const [authenticate, useAuthenticate] = useOutletContext();
     return(
-        <div>This is the home page of the web application, and introduction will be specified below.</div>
+        authenticate ? <Introduction/> : <Boards />
     );
 }
 
