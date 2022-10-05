@@ -14,6 +14,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import LoginDialog from './LoginDialog';
 import AdbIcon from '@mui/icons-material/Adb';
+import SignupDialog from './SignupDialog';
 
 
 const beforeAuthenticatePages = ['Signup', 'Login', 'Login with Google'];
@@ -23,16 +24,25 @@ const afterAuthenticatePages = ['Profile', 'Boards', 'Friends', 'Logout'];
 function NewHeader(props) {
     const [anchorElNav, setAnchorElNav] = useState(null);
     const [pages, setPages] = useState(beforeAuthenticatePages);
-    const [open, setOpen] = useState(false);
+    const [openLoginDialog, setOpenLoginDialog] = useState(false);
+    const [openSignupDialog, setOpenSignupDialog] = useState(false);
 
     const navigate = useNavigate();
 
-    const handleClickOpenDialog = () => {
-        setOpen(true);
+    const handleClickOpenLoginDialog = () => {
+        setOpenLoginDialog(true);
     };
 
-    const handleCloseDialog = () => {
-        setOpen(false);
+    const handleCloseLoginDialog = () => {
+        setOpenLoginDialog(false);
+    };
+
+    const handleClickOpenSignupDialog = () => {
+        setOpenSignupDialog(true);
+    };
+
+    const handleCloseSignupDialog = () => {
+        setOpenSignupDialog(false);
     };
 
     const handleOpenNavMenu = (event) => {
@@ -47,7 +57,7 @@ function NewHeader(props) {
         setAnchorElNav(null);
         switch (page) {
             case "Signup": {
-                navigate("/local-signup");
+                handleClickOpenSignupDialog();
                 break;
             }
             case "Login with Google": {
@@ -55,7 +65,7 @@ function NewHeader(props) {
                 break;
             }
             case "Login": {
-                handleClickOpenDialog();
+                handleClickOpenLoginDialog();
                 break;
             }
             case "Profile": {
@@ -188,7 +198,8 @@ function NewHeader(props) {
                 </Toolbar>
             </Container>
         </AppBar>
-        <LoginDialog open={open} handleCloseDialog={handleCloseDialog} setAuthenticate={props.setAuthenticate}/>
+        <LoginDialog open={openLoginDialog} handleCloseDialog={handleCloseLoginDialog} setAuthenticate={props.setAuthenticate}/>
+        <SignupDialog open={openSignupDialog} handleCloseDialog={handleCloseSignupDialog} setAuthenticate={props.setAuthenticate}/>
         </div>
     );
 };

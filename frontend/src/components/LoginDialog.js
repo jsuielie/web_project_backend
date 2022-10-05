@@ -10,10 +10,15 @@ import DialogTitle from '@mui/material/DialogTitle';
 export default function LoginDialog(props) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    
+
     function handleChange(e, stateSetter, value) {
         e.preventDefault();
         stateSetter(value);
+    }
+
+    function cleanUp() {
+        setUsername("");
+        setPassword("");
     }
 
     function submitForm(e) {
@@ -50,7 +55,7 @@ export default function LoginDialog(props) {
                     console.log(error);
                     props.handleCloseDialog();
                 })
-                
+
 
 
         }
@@ -58,7 +63,10 @@ export default function LoginDialog(props) {
 
     return (
         <div>
-            <Dialog open={props.open} onClose={props.handleCloseDialog}>
+            <Dialog open={props.open} onClose={() => {
+                cleanUp();
+                props.handleCloseDialog
+            }}>
                 <DialogTitle>Local Login</DialogTitle>
                 <DialogContent>
                     <div>
@@ -67,7 +75,7 @@ export default function LoginDialog(props) {
                             id="outlined-required"
                             value={username}
                             label="user name"
-                            onChange={(e) => {handleChange(e, setUsername, e.target.value)}}
+                            onChange={(e) => { handleChange(e, setUsername, e.target.value) }}
                         />
                         <TextField
                             required
@@ -75,12 +83,17 @@ export default function LoginDialog(props) {
                             value={password}
                             label="password"
                             type="password"
-                            onChange={(e) => {handleChange(e, setPassword, e.target.value)}}
+                            onChange={(e) => { handleChange(e, setPassword, e.target.value) }}
                         />
                     </div>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={props.handleCloseDialog}>Cancel</Button>
+                    <Button onClick={() => {
+                        cleanUp();
+                        props.handleCloseDialog
+                    }}>
+                        Cancel
+                    </Button>
                     <Button onClick={submitForm}>Submit</Button>
                 </DialogActions>
             </Dialog>
