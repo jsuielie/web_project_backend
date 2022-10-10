@@ -56,12 +56,14 @@ app.get("/authenticate-checker", (req, res) => {
     if (req.session.passport) {
         authenticateInfo = {
             displayName: req.session.passport.user.displayName,
+            userImage: req.session.passport.user.imageUrl,
             authenticate: true
         }
     }
     else {
         authenticateInfo = {
             displayName: "",
+            userImage: null,
             authenticate: false
         }
     }
@@ -228,7 +230,7 @@ app.post("/create-card", sessionChecker, upload.single("cardImage"), (req, res, 
         console.log("A card has been writen into the database.")
         res.json(responseContent);
     })
-});
+});passport.user
 
 
 app.post("/create-board", sessionChecker, upload.array(), (req, res) => {
