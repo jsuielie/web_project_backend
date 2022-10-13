@@ -20,14 +20,12 @@ function AddCardForm() {
         let reader = new FileReader();
         e.preventDefault();
         console.log(e.target)
-        var url = reader.readAsDataURL(e.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
 
         reader.onloadend = function (e) {
-            setPreviewImageUrl(reader.result)
-
+            setPreviewImageUrl(reader.result);
         };
         setCardImage(e.target.files[0]);
-        console.log(url)
     }
 
     function submitCard(e) {
@@ -83,6 +81,7 @@ function AddCardForm() {
         }
     }
     return (
+        
         <div>
             <form encType="multipart/form-data" onSubmit={(e) => submitCard(e)}>
                 <div className="form-container">

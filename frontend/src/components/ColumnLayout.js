@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Column from "./Column";
 
-function initializeEmptyArray(n){
+function initializeEmptyArray(n) {
     var array = [];
-    for (let i = 0; i < n; i++){
+    for (let i = 0; i < n; i++) {
         array.push([]);
     }
     return array;
@@ -16,9 +16,9 @@ function ColumnLayout(props) {
     useEffect(() => {
         console.log(cardsSepByCol, props);
         let newCardsSepByCol = initializeEmptyArray(props.colNum);
-        
+
         for (let idx = 0; idx < props.cardsData.length; idx++) {
-            
+
             let remainder = idx % props.colNum;
             let item = props.cardsData[idx];
             (newCardsSepByCol[remainder]).push(item);
@@ -28,13 +28,20 @@ function ColumnLayout(props) {
         console.log("After for loop", newCardsSepByCol);
 
         setCardsSepByCol(newCardsSepByCol);
-        
+
     }, [props.cardsData]);
 
 
     return (
         <div className="column-layout">
-            {cardsSepByCol.map((cardDataInSingleCol, index) => <Column key={index} cardDataInSingleCol={cardDataInSingleCol} authenticate={props.authenticate} deleteCardsByCardId={props.deleteCardsByCardId}/>)}
+            {cardsSepByCol.map((cardDataInSingleCol, index) =>
+                <Column key={index}
+                    cardDataInSingleCol={cardDataInSingleCol}
+                    authenticate={props.authenticate}
+                    handleOpenDialog={props.handleOpenDialog}
+                    setEditOrDeleteToggle={props.setEditOrDeleteToggle}
+                    setFocusedCardId={props.setFocusedCardId}
+                />)}
         </div>
     )
 }

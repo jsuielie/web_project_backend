@@ -78,6 +78,7 @@ app.get("/get-cards/", (req, res) => {
             card.createTime AS createTime,
             card.imageUrl AS imageUrl,
             card.userId AS userId,
+            users.imageUrl AS userImageUrl,
             users.displayName AS displayName  
         FROM card
         LEFT JOIN users
@@ -107,6 +108,7 @@ app.get("/get-cards/", (req, res) => {
                         message: obj.message,
                         createTime: obj.createTime,
                         displayName: obj.displayName,
+                        userImageUrl: obj.userImageUrl,
                         imageUrl: obj.imageUrl
                     }
                 }

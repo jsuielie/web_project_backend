@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import LoginDialog from './LoginDialog';
 import AdbIcon from '@mui/icons-material/Adb';
 import SignupDialog from './SignUpDialog';
-import PopoutDialogContainer from './PopoutDialogContainer';
+import PopoutSignInSignUpContainer from './PopoutSignInSignUpContainer';
 
 
 const beforeAuthenticatePages = ['Sign Up'];
@@ -26,6 +26,7 @@ function NewHeader(props) {
     const [anchorElNav, setAnchorElNav] = useState(null);
     const [pages, setPages] = useState(beforeAuthenticatePages);
     const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
 
     const handleCloseDialog = () => {
         setOpen(false);
@@ -51,6 +52,7 @@ function NewHeader(props) {
                 break;
             }
             case "Profile": {
+                navigate("/profile");
                 break;
             }
             case "Logout": {
@@ -174,7 +176,7 @@ function NewHeader(props) {
                     </Toolbar>
                 </Container>
             </AppBar>
-            <PopoutDialogContainer open={open}
+            <PopoutSignInSignUpContainer open={open}
                 handleCloseDialog={handleCloseDialog}
                 setAuthenticate={props.setAuthenticate}
                 authenticate={props.authenticate}

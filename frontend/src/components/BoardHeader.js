@@ -13,15 +13,17 @@ import MoreIcon from '@mui/icons-material/MoreVert';
 export default function BoardHeader(props) {
     console.log(props.title);
     return (
-        <Box sx={{ flexGrow: 1, position: "static", color: 'secondary', justifyContent: "center"}}>
+        <Box sx={{ display: "flex", flexGrow: 1, position: "static", color: 'secondary', paddingTop: "5.5rem", justifyContent: "center" }}>
+            <Box sx={{ display: "flex", flexGrow: 1, position: "static", color: 'secondary', paddingTop: "1rem", paddingBottom: "1rem", justifyContent: "center", alignItems: "center" }}>
                 <Typography
                     variant="h6"
                     noWrap
                     component="div"
-                    sx={{ flexGrow: 1, alignSelf: 'flex-end', height: "7rem" }}
+                    sx={{ alignSelf: 'flex-end', fontSize: "3rem" }}
                 >
                     {props.title}
                 </Typography>
+            </Box>
         </Box>
     );
 }

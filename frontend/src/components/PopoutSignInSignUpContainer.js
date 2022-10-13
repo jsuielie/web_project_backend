@@ -17,7 +17,7 @@ import PopoutSinginList from './PopoutSignInList';
 import PopoutSignUpLocal from './PopoutSignUpLocal';
 import PopoutSignInLocal from './PopoutSignInLocal';
 
-export default function PopoutDialogContainer(props) {
+export default function PopoutSignInSignUpContainer(props) {
     const [toggle, setToggle] = useState("signUpList");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
