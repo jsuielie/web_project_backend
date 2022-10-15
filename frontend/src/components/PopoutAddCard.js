@@ -1,30 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
-import Stack from '@mui/material/Stack';
-import { Card, CardMedia, Divider } from '@mui/material';
+import { CardMedia, Divider } from '@mui/material';
 
 function PopoutAddCard(props) {
     const [message, setMessage] = useState("");
     const [cardImage, setCardImage] = useState(null);
     const [previewImageUrl, setPreviewImageUrl] = useState("");
-    const [warningOpen, setWarningOpen] =useState(false);
 
     function updateInput(e, stateSetter, value) {
         console.log(value);
         stateSetter(value);
-    }
-
-    function handleWarningOpen() {
-        setWarningOpen(true);
     }
 
     function cleanUp() {

@@ -46,9 +46,11 @@ app.use(session({ secret: "cats", cookie: { maxAge: 1000000 } }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get(["/board/:queryString", "card/:queryString"], function (req, res) { // http request to url "/board/:id" and get index.html file
+app.get(["/profile", "/board/:queryString", "card/:queryString"], function (req, res) { // http request to url "/board/:id" and get index.html file
     console.log("get file from the path: ", (process.env.NODE_ENV.trim() === "dev" ? path.join(process.env.STATIC_FOLDER, "index.html") : path.join(__dirname, "dist/index.html")));
-    res.sendFile((process.env.NODE_ENV.trim() === "dev" ? path.join(process.env.STATIC_FOLDER, "index.html") : path.join(__dirname, "dist/index.html")));
+    res.sendFile((process.env.NODE_ENV.trim() === "dev"
+        ? path.join(process.env.STATIC_FOLDER, "index.html")
+        : path.join(__dirname, "dist/index.html")));
 });
 
 app.get("/authenticate-checker", (req, res) => {
@@ -177,6 +179,7 @@ app.get("/get-board-list", (req, res) => {
                     obj => {
                         return {
                             boardId: obj.boardId,
+                            title: obj.title,
                             editable: true,
                             createTime: obj.createTime,
                         }
@@ -232,7 +235,7 @@ app.post("/create-card", sessionChecker, upload.single("cardImage"), (req, res, 
         console.log("A card has been writen into the database.")
         res.json(responseContent);
     })
-});passport.user
+}); passport.user
 
 
 app.post("/create-board", sessionChecker, upload.array(), (req, res) => {

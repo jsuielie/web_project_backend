@@ -58,22 +58,7 @@ function Board() {
         .then(data => {
             setCardsData(data.cards);
         });
-    }
-
-    function afterDelete(focusedCardId) {
-        fetch(`${API_URL}/delete-card/?cardId=${focusedCardId}`, { method: "delete" })
-        .then(res => res.json())
-        .then(data => {
-            console.log(data);
-            console.log("delete the card with card ID: ", cardId);
-            fetch(`${API_URL}/get-cards/?boardId=${boardId}`, { method: "GET" })
-            .then(response => response.json())
-            .then(data => {
-                setCardsData(data.cards);
-            });
-        })
-    };
-    
+    } 
 
     return (
         < div className="board">
@@ -110,7 +95,6 @@ function Board() {
                     open={addAndSignUpSignInOpen}
                     handleCloseDialog={handleCloseAddAndSignUpSignInDialog}
                     setAuthenticate={setAuthenticate}
-                    authenticate={authenticate}
                 />
             }
             <PopoutEditAndDeleteContainer

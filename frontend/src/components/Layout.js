@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Header from "./Header";
-import NewHeader from "./NewHeader"
+import Header from "./Header"
 import Footer from "./Footer";
 import { Outlet, Link } from "react-router-dom";
 
@@ -19,13 +18,15 @@ const Layout = () => {
                 setAuthenticate(data.authenticate);
                 setUserImage(data.userImage);
             });
-    });
+    }, []);
 
     return (
         <div className="page-container" onScroll={(e) => { e ? console.log("OMG!! page-container is screwed.") : console.log("No way") }}>
-            <NewHeader displayName={displayName} authenticate={authenticate} setAuthenticate={setAuthenticate} userImage={userImage}/>
+            <Header displayName={displayName} authenticate={authenticate} setAuthenticate={setAuthenticate} userImage={userImage} />
             <Outlet context={[authenticate, setAuthenticate]} />
-            <div className="footer"><Footer /></div>
+            <div className="footer">
+                <Footer />
+            </div>
         </div>
     )
 };
