@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';;
 import Dialog from '@mui/material/Dialog';
 import PopoutSignupList from './PopoutSignUpList';
@@ -24,18 +24,22 @@ export default function PopoutSignInSignUpContainer(props) {
     }
 
     function onChangeImage(e) {
-        let reader = new FileReader();
-        e.preventDefault();
-        console.log(e.target)
-        reader.readAsDataURL(e.target.files[0]);
+        if (e.target.files[0].size <= 1000000) {
+            let reader = new FileReader();
+            e.preventDefault();
+            reader.readAsDataURL(e.target.files[0]);
 
-        reader.onloadend = function () {
-            setPreviewImageUrl(reader.result);
-            if (reader.readyState == 2) {
-                console.log(e.target.files[0]);
-                setUserImage(e.target.files[0]);
-            }
-        };
+            reader.onloadend = function () {
+                setPreviewImageUrl(reader.result);
+                if (reader.readyState == 2) {
+                    console.log(e.target.files[0]);
+                    setUserImage(e.target.files[0]);
+                }
+            };
+        }
+        else {
+            alert("The selected image is too big.");
+        }
     }
 
     function cleanUp() {
@@ -86,15 +90,20 @@ export default function PopoutSignInSignUpContainer(props) {
             let authFormData = new FormData();
             authFormData.append("username", username);
             authFormData.append("password", password);
-            
+
             fetch(`${API_URL}/local-sign-up`, {
                 method: "POST",
                 body: formdata
             })
-                .then(response => response.json())
+                .then((response) => {
+                    if (response.status === 409) {
+                        throw new Error("The username has been used by other.");
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
                 .then((data) => {
-                    console.log(data);
-
                     fetch(`${API_URL}/login/local`, {
                         method: "POST",
                         body: authFormData
@@ -114,12 +123,12 @@ export default function PopoutSignInSignUpContainer(props) {
                         })
                         .catch((error) => {
                             console.log(error);
-                            navigate("/"); // need to redirect to a path to a page for error handling
+                            alert(error);
                         })
                 })
                 .catch((error) => {
                     console.log(error);
-                    navigate("/"); // need to redirect to a path to a page for error handling
+                    alert(error);
                 })
         }
     }
@@ -152,6 +161,7 @@ export default function PopoutSignInSignUpContainer(props) {
                             props.setAuthenticate(data.authenticate);
                             if (data.authenticate) {
                                 cleanUp();
+                                setToggle("signUpList");
                                 props.handleCloseDialog();
                             }
                             else {
@@ -161,12 +171,8 @@ export default function PopoutSignInSignUpContainer(props) {
                 })
                 .catch((error) => {
                     console.log(error);
-                    cleanUp();
-                    props.handleCloseDialog();
+                    alert("internal error");
                 })
-
-
-
         }
     }
 
@@ -179,8 +185,14 @@ export default function PopoutSignInSignUpContainer(props) {
                 setToggle("signUpList");
             }}
         >
-            <PopoutSignupList toggle={toggle} setToggle={setToggle} />
-            <PopoutSinginList toggle={toggle} setToggle={setToggle} />
+            <PopoutSignupList
+                toggle={toggle}
+                setToggle={setToggle}
+            />
+            <PopoutSinginList
+                toggle={toggle}
+                setToggle={setToggle}
+            />
             <PopoutSignUpLocal
                 toggle={toggle}
                 setToggle={setToggle}
@@ -201,7 +213,8 @@ export default function PopoutSignInSignUpContainer(props) {
                 handleChange={handleChange}
                 onChangeImage={onChangeImage}
                 cleanUp={cleanUp}
-                submitForm={submitSignUpForm} />
+                submitForm={submitSignUpForm}
+            />
             <PopoutSignInLocal
                 toggle={toggle}
                 setToggle={setToggle}
@@ -211,7 +224,8 @@ export default function PopoutSignInSignUpContainer(props) {
                 setPassword={setPassword}
                 handleChange={handleChange}
                 cleanUp={cleanUp}
-                submitForm={submitSignInForm} />
+                submitForm={submitSignInForm}
+            />
         </Dialog>
     );
 }

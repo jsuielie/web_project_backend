@@ -1,6 +1,13 @@
-html, body {
+html {
+    height: 100vh;
+}
+
+body {
+    height: 100vh;
     margin: 0;
-    width: 100vw;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 /*
@@ -12,9 +19,10 @@ html, body {
 
 .page-container {
     /*Make page-container positioned in order to append the footer in the back of the page*/
-    position: relative;
+    position: absolute;
+    width: 100vw;
     min-height: 100vh;
-    width: 100%;
+    box-sizing: border-box;
     background-color: rgb(231, 235, 240);
 }
 
@@ -86,6 +94,7 @@ html, body {
     display: flex;
     flex-direction: row;
     width: 80%;
+    padding-bottom: 2rem;
 }
 
 .col {
@@ -93,16 +102,6 @@ html, body {
     flex-grow: 1;
     flex-basis: 0;
     min-width: 0;
-}
-
-
-.footer {
-    /* positioned relative to its closest positioned ancestor */
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    /* Footer height */
-    height: 2.5rem;
 }
 
 .form-container {

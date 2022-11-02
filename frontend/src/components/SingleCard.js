@@ -10,6 +10,7 @@ import EditDeleteBntGroup from './EditDeleteBntGroup';
 
 export default function SingleCard(props) {
     const date = moment(props.cardData.createTime, "YYYY-MM-DDThh:mm:ss.SSSZ");
+    console.log(props.cardData);
     return (
         <div style={{ padding: "20px", "boxSizing": "border-box", width: "100%" }}>
             <Card sx={{ maxWidth: "90%" }}>
@@ -22,14 +23,14 @@ export default function SingleCard(props) {
                     /> : null}
                 <CardHeader
                     avatar={
-                        <Avatar aria-label="recipe"
-                            src={props.cardData.userImageUrl}>
-                            R
-                        </Avatar>
+                        <Avatar
+                            aria-label="User Image"
+                            src={props.cardData.userImageUrl}
+                        />
                     }
                     title={props.cardData.displayName}
                     subheader={date.format("YYYY/MM/DD")}
-                    
+
                 />
                 <CardContent>
                     <Typography variant="body2" color="text.secondary">

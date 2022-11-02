@@ -5,7 +5,14 @@ import BoardPoint from "./BoardPoint";
 function BoardList(props) {
 
     return (
-        <List dense={false}>
+        <List
+            dense={false}
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "stretch",
+            }}
+        >
             {props.boardsData.map(boardPoint => <BoardPoint
                 key={boardPoint.boardId}
                 boardId={boardPoint.boardId}

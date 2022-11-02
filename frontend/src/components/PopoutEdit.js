@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
-import Stack from '@mui/material/Stack';
-import { Card, CardMedia, Divider } from '@mui/material';
+import { CardMedia, Divider } from '@mui/material';
 
 
 function PopoutEdit(props) {
@@ -39,18 +33,23 @@ function PopoutEdit(props) {
     }
 
     function onChangeImage(e) {
-        let reader = new FileReader();
-        e.preventDefault();
-        let file = e.target.files[0];
+        if (e.target.files[0].size <= 1000000) {
+            let reader = new FileReader();
+            e.preventDefault();
+            let file = e.target.files[0];
 
-        reader.onloadend = function (e) {
-            let { result } = e.target;
-            setPreviewImageUrl(result);
-        };
+            reader.onloadend = function (e) {
+                let { result } = e.target;
+                setPreviewImageUrl(result);
+            };
 
-        let url = reader.readAsDataURL(file);
-        setCardImage(file);
-        setPreviewImageUrl(url);
+            let url = reader.readAsDataURL(file);
+            setCardImage(file);
+            setPreviewImageUrl(url);
+        }
+        else {
+            alert("The selected image is too big.");
+        }
     }
 
     function submitCard(e) {
@@ -106,6 +105,7 @@ function PopoutEdit(props) {
                     required
                     id="outlined-textarea"
                     multiline
+                    rows={4}
                     value={message}
                     label="Message"
                     onChange={(e) => { updateInput(e, setMessage, e.target.value) }}
@@ -120,7 +120,7 @@ function PopoutEdit(props) {
                 </Button>
                 <Button onClick={(e) => {
                     props.handleCloseDialog();
-                    submitCard(e);  
+                    submitCard(e);
                 }}>
                     Submit
                 </Button>

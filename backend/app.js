@@ -35,9 +35,18 @@ serializeAndDeserialize();
 const s3 = new Aws.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
-})
-const upload = createMulter(["image/jpeg", "image/jpg"])
-const sessionChecker = (req, res, next) => { req.session ? next() : res.status(401).json({ message: "authorized action" }) };
+});
+const upload = createMulter(["image/jpeg", "image/jpg", "image/png"]);
+const sessionChecker = (req, res, next) => {
+    if (req.session.passport) {
+        console.log(req.session.passport);
+        next();
+    }
+    else {
+        console.log("no passport session.");
+        res.status(401).json({ message: "authorized action" });
+    }
+};
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -368,9 +377,17 @@ app.delete("/delete-card", sessionChecker, (req, res, next) => {
 
 
 const localUserChecker = (req, res, next) => {
-    con.query(`SELECT * FROM users WHERE userId = ?`, [[[`local` + req.body.userId]]], (error, result) => {
-        result.length ? res.status(409).json({ message: `User with ${"local" + req.body.userId} user ID already exists.` }) : next();
-    })
+    con.query(`SELECT * FROM users WHERE userId = ?`, [[[`local${req.body.username}`]]],
+        (error, result) => {
+            console.log(`local${req.body.username}`);
+            console.log(result);
+            if (result.length) {
+                res.status(409).json({ message: `User with ${`local${req.body.username}`} user ID already exists.` });
+            }
+            else {
+                next();
+            }
+        })
 }
 app.post("/local-sign-up", upload.single("userImage"), localUserChecker, async (req, res) => {
 

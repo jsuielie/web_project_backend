@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams, useOutletContext } from 'react-router-dom';
 import ColumnLayout from "./ColumnLayout";
 import BoardHeader from "./BoardHeader";
-import Fab from '@mui/material/Fab';
-import EditIcon from '@mui/icons-material/Edit';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import PopoutAddCard from "./PopoutAddCard";
 import PopoutEditAndDeleteContainer from "./PopoutEditAndDeleteContainer";
-import { Tooltip } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import PopoutSignInSignUpContainer from "./PopoutSignInSignUpContainer";
 
 function Board() {
@@ -54,43 +53,45 @@ function Board() {
 
     function afterEditOrDelete() {
         fetch(`${API_URL}/get-cards/?boardId=${boardId}`, { method: "GET" })
-        .then(response => response.json())
-        .then(data => {
-            setCardsData(data.cards);
-        });
-    } 
+            .then(response => response.json())
+            .then(data => {
+                setCardsData(data.cards);
+            });
+    }
 
     return (
         < div className="board">
             <BoardHeader title={boardData.title} />
             <div className="main-layout">
-                <ColumnLayout
-                    authenticate={authenticate}
-                    cardsData={cardsData}
-                    colNum={colNum}
-                    handleOpenDialog={handleOpenEditAndDeleteDialog}
-                    setEditOrDeleteToggle={setEditOrDeleteToggle}
-                    setFocusedCardId={setFocusedCardId}
-                />
+                <Grid
+                    container
+                    direction="column"
+                    alignItems="center">
+                    <Button
+                        variant="contained"
+                        startIcon={<AddBoxIcon />}
+                        onClick={handleOpenAddAndSignUpSignInDialog}
+                        size="medium"
+                    >
+                        Add A New Card
+                    </Button>
+                    <ColumnLayout
+                        authenticate={authenticate}
+                        cardsData={cardsData}
+                        colNum={colNum}
+                        handleOpenDialog={handleOpenEditAndDeleteDialog}
+                        setEditOrDeleteToggle={setEditOrDeleteToggle}
+                        setFocusedCardId={setFocusedCardId}
+                    />
+                </Grid>
             </div>
-            <Tooltip title="Add A Card">
-                <Fab color="secondary"
-                    aria-label="edit"
-                    onClick={handleOpenAddAndSignUpSignInDialog}
-                    sx={{
-                        position: "fixed",
-                        bottom: "1rem",
-                        right: "1rem"
-                    }}>
-                    <EditIcon />
-                </Fab>
-            </Tooltip>
             {authenticate
                 ? <PopoutAddCard
                     open={addAndSignUpSignInOpen}
                     handleCloseDialog={handleCloseAddAndSignUpSignInDialog}
                     boardId={boardId}
-                    setCardsData={setCardsData} />
+                    setCardsData={setCardsData}
+                    setAuthenticate={setAuthenticate}/>
                 : <PopoutSignInSignUpContainer
                     open={addAndSignUpSignInOpen}
                     handleCloseDialog={handleCloseAddAndSignUpSignInDialog}

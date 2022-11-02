@@ -1,5 +1,5 @@
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import { Avatar, ListItem, ListItemAvatar, ListItemText, Tooltip } from "@mui/material";
+import { Avatar, ListItemAvatar, ListItemButton, ListItemText, Tooltip } from "@mui/material";
 import React from "react";
 import moment from 'moment';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,8 @@ function BoardPoint(props) {
                 textDecoration: "none",
                 color: "#858585"
             }}>
-            <ListItem>
+            <ListItemButton
+            >
                 <ListItemAvatar>
                     <Avatar>
                         <DashboardIcon />
@@ -23,7 +24,7 @@ function BoardPoint(props) {
                     primary={props.title}
                     secondary={date.format("YYYY/MM/DD")}
                 />
-            </ListItem>
+            </ListItemButton>
         </Link>
     );
 }

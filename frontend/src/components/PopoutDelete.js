@@ -34,7 +34,7 @@ function PopoutDelete(props) {
             <DialogTitle>Confirmation</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Are you sure about deleting this card? It would be lost for good...
+                    Are you sure about deleting this card? It would be deleted for good...
                 </DialogContentText>
             </DialogContent>
             <DialogActions>

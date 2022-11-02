@@ -26,17 +26,22 @@ function PopoutAddCard(props) {
     }
 
     function onChangeImage(e) {
-        e.preventDefault();
-        let reader = new FileReader();
-        let file = e.target.files[0];
-        console.log(file);
+        if (e.target.files[0].size <= 1000000) {
+            e.preventDefault();
+            let reader = new FileReader();
+            let file = e.target.files[0];
+            console.log(file);
 
-        reader.onloadend = function (e) {
-            const { result } = e.target;
-            setPreviewImageUrl(result)
-            setCardImage(file);
-        };
-        reader.readAsDataURL(file);
+            reader.onloadend = function (e) {
+                const { result } = e.target;
+                setPreviewImageUrl(result)
+                setCardImage(file);
+            };
+            reader.readAsDataURL(file);
+        }
+        else {
+            alert("The selected image is too big (> 1000000 bytes).");
+        }
     }
 
     function submitCard(e) {
@@ -55,9 +60,16 @@ function PopoutAddCard(props) {
             method: 'POST', // or 'PUT'
             body: formData,
         })
-            .then(response => response.json())
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                else {
+                    throw new Error("expiration of the loggin session");
+                }
+            })
             .then(data => {
-                console.log(data.cardId);
+                console.log(data);
                 fetch(`${API_URL}/get-cards/?boardId=${props.boardId}`, { method: "GET" })
                     .then(res => res.json())
                     .then(data => {
@@ -66,8 +78,9 @@ function PopoutAddCard(props) {
                     })
             })
             .catch((error) => {
-                console.error('Error:', error);
-                alert('Error: fail to write card!!!');
+                console.log('Error:', error);
+                alert(`Error: fail to write card due to ${error}.`);
+                props.setAuthenticate(false);
             });
     }
 
@@ -92,7 +105,7 @@ function PopoutAddCard(props) {
                             component="img"
                             height="50%"
                             image={previewImageUrl}
-                            alt="green iguana"
+                            alt="Card Image"
                         /> : null}
                     <IconButton color="primary" aria-label="upload picture" component="label">
                         <input hidden accept="image/*" type="file" onChange={(e) => onChangeImage(e)} />
@@ -100,11 +113,13 @@ function PopoutAddCard(props) {
                     </IconButton>
                     <Divider variant='middle' />
                     <TextField
+                        margin="dense"
                         fullWidth
                         required
                         id="outlined-textarea"
                         multiline
                         value={message}
+                        rows={4}
                         label="Message"
                         onChange={(e) => { updateInput(e, setMessage, e.target.value) }}
                     />

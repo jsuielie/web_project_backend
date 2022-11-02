@@ -5,10 +5,12 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import { useNavigate } from 'react-router-dom';
 
 
 function PopoutCreateBoard(props) {
     const [title, setTitle] = useState("");
+    const navigate = useNavigate();
 
     function updateInput(e, stateSetter, value) {
         e.preventDefault();
@@ -39,6 +41,7 @@ function PopoutCreateBoard(props) {
                 .then(response => response.json())
                 .then((data) => {
                     console.log(data);
+                    navigate(`../board/${data.boardId}`);
 
                 })
                 .catch((error) => {
@@ -61,10 +64,12 @@ function PopoutCreateBoard(props) {
             <DialogTitle>Create A Board</DialogTitle>
             <DialogContent>
                 <TextField
+                    margin="dense"
                     fullWidth
                     required
                     id="outlined-textarea"
                     multiline
+                    rows={1}
                     value={title}
                     label="title"
                     onChange={(e) => { updateInput(e, setTitle, e.target.value) }}
@@ -82,7 +87,6 @@ function PopoutCreateBoard(props) {
                     submitBoard(e);
                     cleanUp();
                     props.handleCloseDialog();
-                    props.refetch();
                 }}>
                     Submit
                 </Button>

@@ -5,7 +5,6 @@ import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -27,18 +26,23 @@ export default function SignupDialog(props) {
     }
 
     function onChangeImage(e) {
-        let reader = new FileReader();
-        e.preventDefault();
-        console.log(e.target)
-        var url = reader.readAsDataURL(e.target.files[0]);
+        if (e.target.files[0].size <= 1000000) {
+            let reader = new FileReader();
+            e.preventDefault();
+            console.log(e.target)
+            var url = reader.readAsDataURL(e.target.files[0]);
 
-        reader.onloadend = function (e) {
-            setPreviewImageUrl(reader.result);
-            if (reader.readyState == 2) {
-                console.log(e.target);
-                setUserImage(e.target.files[0]);
-            }
-        };
+            reader.onloadend = function (e) {
+                setPreviewImageUrl(reader.result);
+                if (reader.readyState == 2) {
+                    console.log(e.target);
+                    setUserImage(e.target.files[0]);
+                }
+            };
+        }
+        else {
+            alert("The selected image is too big.");
+        }
     }
 
     function cleanUp() {

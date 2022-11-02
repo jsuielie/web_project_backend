@@ -1,19 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import AdbIcon from '@mui/icons-material/Adb';
-import Avatar from '@mui/material/Avatar';
+import React from 'react';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import GoogleIcon from '@mui/icons-material/Google';
-import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
-import IconButton from '@mui/material/IconButton';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Stack from '@mui/material/Stack';
+import Dashboard from '@mui/icons-material/Dashboard';
 
 function PopoutSignupList(props) {
     function handleClickSignUpLocal() {
@@ -37,7 +29,7 @@ function PopoutSignupList(props) {
                         </Button>
                         <Button variant="contained"
                             onClick={handleClickSignUpLocal}
-                            startIcon={<AdbIcon />}>
+                            startIcon={<Dashboard />}>
                             Sign Up At CardBoard
                         </Button>
                         <div>Already have an account? {<Link component="button" underline="none" onClick={handleClickSignIn}>Sign in</Link>}</div>
