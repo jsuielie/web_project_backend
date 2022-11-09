@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { ProductionQuantityLimits } = require('@mui/icons-material');
 
 let API_URL = {
-    production: JSON.stringify('http://tutorials-env.eba-m9jimr3a.ap-southeast-1.elasticbeanstalk.com'),
+    production: JSON.stringify('https://freecardboard.net'),
     development: JSON.stringify('http://localhost:5000')
 }
 

@@ -3,9 +3,11 @@ import { useParams, useOutletContext } from 'react-router-dom';
 import ColumnLayout from "./ColumnLayout";
 import BoardHeader from "./BoardHeader";
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import EmailIcon from '@mui/icons-material/Email';
 import PopoutAddCard from "./PopoutAddCard";
 import PopoutEditAndDeleteContainer from "./PopoutEditAndDeleteContainer";
-import { Button, Grid } from "@mui/material";
+import PopoutInvitation from "./PopoutInvitation";
+import { Button, Grid, Stack } from "@mui/material";
 import PopoutSignInSignUpContainer from "./PopoutSignInSignUpContainer";
 
 function Board() {
@@ -17,6 +19,7 @@ function Board() {
     const [addAndSignUpSignInOpen, setAddAndSignUpSignInOpen] = useState(false);
     const [editAndDeleteOpen, setEditAndDeleteOpen] = useState(false);
     const [editOrDeleteToggle, setEditOrDeleteToggle] = useState(null);
+    const [invitationOpen, setInvitationOpen] = useState(false);
     const [focusedCardId, setFocusedCardId] = useState(null);
 
 
@@ -36,6 +39,14 @@ function Board() {
 
     const handleOpenEditAndDeleteDialog = () => {
         setEditAndDeleteOpen(true);
+    }
+
+    const handleCloseInvitationDialog = () => {
+        setInvitationOpen(false);
+    }
+
+    const handleOpenInvitationDialog = () => {
+        setInvitationOpen(true);
     }
 
     useEffect(() => {
@@ -66,15 +77,31 @@ function Board() {
                 <Grid
                     container
                     direction="column"
-                    alignItems="center">
-                    <Button
-                        variant="contained"
-                        startIcon={<AddBoxIcon />}
-                        onClick={handleOpenAddAndSignUpSignInDialog}
-                        size="medium"
+                    alignItems="center"
+                >
+                    <Stack
+                        spacing={2}
                     >
-                        Add A New Card
-                    </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddBoxIcon />}
+                            onClick={handleOpenAddAndSignUpSignInDialog}
+                            size="medium"
+                        >
+                            Add A New Card
+                        </Button>
+                        {boardData.editable
+                            ? <Button
+                                variant="contained"
+                                startIcon={<EmailIcon />}
+                                onClick={handleOpenInvitationDialog}
+                                size="medium"
+                            >
+                                Invite A Friend
+                            </Button>
+                            : null
+                        }
+                    </Stack>
                     <ColumnLayout
                         authenticate={authenticate}
                         cardsData={cardsData}
@@ -91,12 +118,22 @@ function Board() {
                     handleCloseDialog={handleCloseAddAndSignUpSignInDialog}
                     boardId={boardId}
                     setCardsData={setCardsData}
-                    setAuthenticate={setAuthenticate}/>
+                    setAuthenticate={setAuthenticate}
+                />
                 : <PopoutSignInSignUpContainer
                     open={addAndSignUpSignInOpen}
                     handleCloseDialog={handleCloseAddAndSignUpSignInDialog}
                     setAuthenticate={setAuthenticate}
                 />
+            }
+            {boardData.editable
+                ? <PopoutInvitation
+                    open={invitationOpen}
+                    handleCloseDialog={handleCloseInvitationDialog}
+                    boardId={boardId}
+                    boardTitle={boardData.title}
+                />
+                : null
             }
             <PopoutEditAndDeleteContainer
                 open={editAndDeleteOpen}

@@ -36,6 +36,11 @@ const s3 = new Aws.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
 });
+const sqs = new Aws.SQS({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET,
+    region: "ap-southeast-1"
+});
 const upload = createMulter(["image/jpeg", "image/jpg", "image/png"]);
 const sessionChecker = (req, res, next) => {
     if (req.session.passport) {
@@ -518,6 +523,30 @@ app.get("/logout", (req, res) => {
     })
 })
 
+app.post("/invitationSending/", sessionChecker, upload.none(), (req, res) => {
+    console.log(req.session.passport.user.displayName);
+    let params = {
+        MessageBody: JSON.stringify({
+            emailAddress: req.body.emailAddress,
+            receiverName: req.body.receiverName,
+            displayName: req.session.passport.user.displayName,
+            boardId: req.query.boardId
+        }),
+        QueueUrl: process.env.AWS_QUEUE_URL,
+        DelaySeconds: 0
+    };
+
+    sqs.sendMessage(params, (error, data) => {
+        if (error) {
+            console.log(error, error.stack);
+            res.status(502).send("Something wrong in enqueuing a message.");
+        }
+        else {
+            console.log("Message has been produced.");
+            res.status(200).json({ message: "Message has been produced." });
+        }
+    })
+})
 
 app.listen(process.env.PORT, (err) => {
     if (err) console.log("Error is occurring in the server setup!");

@@ -20,7 +20,7 @@ function googleAuth(env) {
         passport.use(new GoogleStrategy({
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: "http://tutorials-env.eba-m9jimr3a.ap-southeast-1.elasticbeanstalk.com/google/callback",
+            callbackURL: "https://freecardboard.net/google/callback",
             scope: ["profile"],
             passReqToCallback: true
         }, function verify(req, accessToken, refreshToken, profile, done) {

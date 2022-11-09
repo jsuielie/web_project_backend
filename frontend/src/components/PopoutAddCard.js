@@ -90,7 +90,7 @@ function PopoutAddCard(props) {
             fullWidth={true}
             maxWidth="xs"
             onClose={() => {
-                if (message !== "" || cardImage !== null) {
+                if (message === "" || cardImage === null) {
                     alert("The content of the card will not saved.")
                 }
                 cleanUp();
