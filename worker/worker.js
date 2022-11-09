@@ -25,7 +25,7 @@ const con = mysql.createConnection({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-con.connect();
+//con.connect();
 
 app.post("/", (req, res) => {
     console.log("=====================start=========================");
