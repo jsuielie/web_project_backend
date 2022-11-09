@@ -5,14 +5,13 @@ name: elastic.beanstalk.prod CD
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 env:
-  NODE_ENV: prod
-    
+  NODE_ENV: production
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,68 +19,83 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - run: echo $NODE_ENV
+      - run: echo $NODE_ENV
 
-    - name: Installing NPM in the frontend
-      working-directory: ./frontend
-      run: npm install
-      
-    - working-directory: ./frontend
-      run: npm ci
+      - name: Installing NPM in the frontend
+        working-directory: ./frontend
+        run: npm install
 
-    - name: list available scripts for npm
-      working-directory: ./frontend
-      run: npm run
+      - working-directory: ./frontend
+        run: npm ci
 
-    - name: build a frontend react app
-      working-directory: ./frontend
-      run: npm run build
+      - name: list available scripts for npm
+        working-directory: ./frontend
+        run: npm run
 
-    - name: move the build to the backend
-      working-directory: ./frontend
-      run: mv dist ../backend/dist
+      - name: build a frontend react app
+        working-directory: ./frontend
+        run: npm run build
 
-    - name: Installing NPM in the backend
-      working-directory: ./backend
-      run: npm install
-      
-    - working-directory: ./backend
-      run: npm ci
+      - name: move the build to the backend
+        working-directory: ./frontend
+        run: mv dist ../backend/dist
 
-    - name: Generate deployment package
-      working-directory: ./backend
-      run: zip -r deploy.zip * -x "**node_modules**"
-      
-    - name: Get timestamp
-      uses: gerred/actions/current-time@master
-      id: current-time
+      - name: Installing NPM in the backend
+        working-directory: ./backend
+        run: npm install
 
-    - name: Run string replace
-      uses: frabert/replace-string-action@master
-      id: format-time
-      with:
-        pattern: '[:\.]+'
-        string: "${{ steps.current-time.outputs.time }}"
-        replace-with: '-'
-        flags: 'g'
-  
-    - name: Beanstalk Deploy my app
-      uses: einaregilsson/beanstalk-deploy@v18
-      with:
-        aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
-        aws_secret_key: ${{secrets.AWS_ACCESS_KEY_SECRET}}
-        application_name: tutorials
-        environment_name: Tutorials-env
-        region: ap-southeast-1
-        version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
-        deployment_package: ./backend/deploy.zip
+      - working-directory: ./backend
+        run: npm ci
 
-    - name: Deployed successfully!
-      run: echo App deployed to ELB
+      - name: Generate deployment backend package
+        working-directory: ./backend
+        run: zip -r deploy.zip * -x "**node_modules**"
+
+      - name: Get timestamp
+        uses: gerred/actions/current-time@master
+        id: current-time
+
+      - name: Run string replace
+        uses: frabert/replace-string-action@master
+        id: format-time
+        with:
+          pattern: '[:\.]+'
+          string: "${{ steps.current-time.outputs.time }}"
+          replace-with: "-"
+          flags: "g"
+
+      - name: Beanstalk Deploy web app
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws_secret_key: ${{secrets.AWS_ACCESS_KEY_SECRET}}
+          application_name: tutorials
+          environment_name: Tutorials-env
+          region: ap-southeast-1
+          version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
+          deployment_package: ./backend/deploy.zip
+
+      - name: Generate deployment frontend package
+        working-directory: ./worker
+        run: zip -r deploy.zip * -x "**node_modules**"
+
+      - name: Beanstalk Deploy worker app
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws_secret_key: ${{secrets.AWS_ACCESS_KEY_SECRET}}
+          application_name: worker_application
+          environment_name: Workerapplication-env
+          region: ap-southeast-1
+          version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
+          deployment_package: ./worker/deploy.zip
+
+      - name: Deployed successfully!
+        run: echo App deployed to ELB
