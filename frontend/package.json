@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack serve",
-    "build": "npx webpack-cli build --config=webpack.config.js --mode=production --node-env=production",
+    "build": "set NODE_ENV=prod && npx webpack-cli build --config=webpack.config.js --mode=production --node-env=production",
     "build-serve": "set NODE_ENV=dev && npx webpack-cli --config=./webpack.config.js --mode=development --node-env=development && cd ../backend && nodemon app.js"
   },
   "author": "Elijah",
