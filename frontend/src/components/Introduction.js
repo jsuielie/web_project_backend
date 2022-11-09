@@ -6,7 +6,7 @@ import PopoutCreateBoard from "./PopoutCreateBoard";
 import { useOutletContext } from "react-router-dom";
 
 const introPictureURL =
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV === "prod"
         ? "s3://board-data-bucket/360_F_220143804_fc4xRygvJ8bn8JPQumtHJieDN4ORNyjs.jpg"
         : "../360_F_220143804_fc4xRygvJ8bn8JPQumtHJieDN4ORNyjs.jpg";
 
