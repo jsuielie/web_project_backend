@@ -82,7 +82,14 @@ jobs:
           version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
           deployment_package: ./backend/deploy.zip
 
-      - name: Generate deployment frontend package
+      - name: Installing NPM in the worker
+        working-directory: ./worker
+        run: npm install
+
+      - working-directory: ./worker
+        run: npm ci
+
+      - name: Generate deployment worker package
         working-directory: ./worker
         run: zip -r deploy.zip * -x "**node_modules**"
 

@@ -2,7 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { ProductionQuantityLimits } = require('@mui/icons-material');
+
+console.log(process.env.NODE_ENV);
 
 let API_URL = {
     production: JSON.stringify('https://freecardboard.net'),
