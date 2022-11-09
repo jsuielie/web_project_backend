@@ -3,8 +3,6 @@ const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-console.log(process.env.NODE_ENV);
-
 let API_URL = {
     production: JSON.stringify('https://freecardboard.net'),
     development: JSON.stringify('http://localhost:5000')
