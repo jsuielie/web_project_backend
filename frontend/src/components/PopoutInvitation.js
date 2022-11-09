@@ -110,6 +110,7 @@ function PopoutInvitation(props) {
                             submitCard(e);
                             cleanUp();
                             props.handleCloseDialog();
+                            alert("Invitation has been sent.");
                         }
                     }}>
                         Submit

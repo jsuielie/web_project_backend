@@ -54,7 +54,7 @@ app.post("/", (req, res) => {
             Body: {
                 Text: {
                     Charset: "UTF-8",
-                    Data: `Dear ${req.body.receiverName},\n    Hi, we are the FreeCardBoard team, ${req.body.displayName} invites you to Leave some messages on his or her board. Please click the following URL: https://freecardboard.net/board/${req.body.boardId}.\n\nSincerely,\n\nFreeCardBoard team`
+                    Data: `Dear ${req.body.receiverName},\n        Hi, we are the FreeCardBoard team, ${req.body.displayName} invites you to leave some messages on his or her board. Please click the following URL: https://freecardboard.net/board/${req.body.boardId}.\n\nSincerely,\n\nFreeCardBoard team`
                 }
             },
             Subject: {
