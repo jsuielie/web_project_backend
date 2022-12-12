@@ -73,7 +73,7 @@ jobs:
           flags: "g"
 
       - name: Run shell script to build the docker images
-        run: ./backend/docker-deployment.sh $APP_VERSION ${{secret.ECR_PASSWARD}}
+        run: ./backend/docker-deployment.sh $APP_VERSION ${{secrets.ECR_PASSWARD}}
 
       - name: Beanstalk Deploy web app
         uses: einaregilsson/beanstalk-deploy@v18
