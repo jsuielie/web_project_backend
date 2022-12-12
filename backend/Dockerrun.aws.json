@@ -1,0 +1,11 @@
+{
+	"AWSEBDockerrunVersion": "1",
+	"Image": {
+		"Name": "public.ecr.aws/e8u7j0e0/web_app:latest"
+	},
+	"Ports": [
+		{
+			"ContainerPort": 5000
+		}
+	]
+}

@@ -1,0 +1,6 @@
+.elasticbeanstalk
+node_modules
+.ebignore
+.gitignore
+get-pip.py
+.github

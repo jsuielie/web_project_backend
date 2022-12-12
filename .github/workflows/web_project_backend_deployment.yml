@@ -5,10 +5,11 @@ name: elastic.beanstalk.prod CD
 
 on:
   push:
-    branches: [master]
+    branches: [dockerized_app]
 
 env:
   NODE_ENV: prod
+  APP_VERSION: 6
 
 jobs:
   build:
@@ -39,13 +40,13 @@ jobs:
         working-directory: ./frontend
         run: npm run
 
-      - name: build a frontend react app
-        working-directory: ./frontend
-        run: npm run build
+      #- name: build a frontend react app
+      #  working-directory: ./frontend
+      #  run: npm run build
 
-      - name: move the build to the backend
-        working-directory: ./frontend
-        run: mv dist ../backend/dist
+      #- name: move the build to the backend
+      #  working-directory: ./frontend
+      #  run: mv dist ../backend/dist
 
       - name: Installing NPM in the backend
         working-directory: ./backend
@@ -54,9 +55,9 @@ jobs:
       - working-directory: ./backend
         run: npm ci
 
-      - name: Generate deployment backend package
-        working-directory: ./backend
-        run: zip -r deploy.zip * -x "**node_modules**"
+      #- name: Generate deployment backend package
+      #  working-directory: ./backend
+      #  run: zip -r deploy.zip * -x "**node_modules**"
 
       - name: Get timestamp
         uses: gerred/actions/current-time@master
@@ -71,16 +72,19 @@ jobs:
           replace-with: "-"
           flags: "g"
 
+      - name: Run shell script to build the docker images
+        run: ./backend/docker-deployment.sh $APP_VERSION ${{secret.ECR_PASSWARD}}
+
       - name: Beanstalk Deploy web app
         uses: einaregilsson/beanstalk-deploy@v18
         with:
           aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
           aws_secret_key: ${{secrets.AWS_ACCESS_KEY_SECRET}}
-          application_name: tutorials
-          environment_name: Tutorials-env
+          application_name: web-app
+          environment_name: Webapp-env
           region: ap-southeast-1
-          version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
-          deployment_package: ./backend/deploy.zip
+          version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Usingfile  timestamp for the versions
+          deployment_package: ./backend/Dockerrun.aws.json
 
       - name: Installing NPM in the worker
         working-directory: ./worker

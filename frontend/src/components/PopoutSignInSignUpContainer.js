@@ -16,7 +16,7 @@ export default function PopoutSignInSignUpContainer(props) {
     const [userImage, setUserImage] = useState(null);
     const [previewImageUrl, setPreviewImageUrl] = useState(null);
     const navigate = useNavigate();
-
+    console.log(API_URL);
 
     function handleChange(e, stateSetter, value) {
         e.preventDefault();
