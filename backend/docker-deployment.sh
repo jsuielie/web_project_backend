@@ -9,11 +9,11 @@ cp -ru dist ../backend/
 
 cd ../backend
 
-export DOCKER_REGISTRY="public.ecr.aws/e8u7j0e0"
-export APP_NAME="web_app"
-export APP_VERSION=$1
+DOCKER_REGISTRY="public.ecr.aws/e8u7j0e0"
+APP_NAME="web_app"
+APP_VERSION=$1
 
-docker login --username AWS --password $2 $DOCKER_REGISTRY
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
 
 docker build -t $DOCKER_REGISTRY/$APP_NAME:$APP_VERSION -t $DOCKER_REGISTRY/$APP_NAME:latest .
 docker push $DOCKER_REGISTRY/$APP_NAME:$APP_VERSION
