@@ -50,7 +50,7 @@ jobs:
         run: npm ci
 
       - name: Configure AWS credetials
-        uses: aws-actions/configure-aws-credetials@v1
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
@@ -58,7 +58,7 @@ jobs:
 
       - name: Login to Elastic Container Registry (ECR) Public
         id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v18
+        uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
 
