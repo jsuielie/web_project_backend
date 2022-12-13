@@ -20,7 +20,7 @@ jobs:
         node-version: [16.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -29,34 +29,50 @@ jobs:
 
       - run: echo $NODE_ENV
 
-      - run: echo $APP_VERSION
-
       - name: Installing NPM in the frontend
         working-directory: ./frontend
-        run: npm install
-
-      - working-directory: ./frontend
         run: npm ci
 
       - name: list available scripts for npm
         working-directory: ./frontend
         run: npm run
 
-      #- name: build a frontend react app
-      #  working-directory: ./frontend
-      #  run: npm run build
+      - name: build a frontend react app using webpack
+        working-directory: ./frontend
+        run: npx webpack build --config ./webpack.config.js --mode production --node-env production --env environment=docker
 
-      #- name: move the build to the backend
-      #  working-directory: ./frontend
-      #  run: mv dist ../backend/dist
+      - name: move the build to the backend
+        working-directory: ./frontend
+        run: mv dist ../backend/dist
 
       - name: Installing NPM in the backend
         working-directory: ./backend
-        run: npm install
-
-      - working-directory: ./backend
         run: npm ci
 
+      - name: Configure AWS credetials
+        uses: aws-actions/configure-aws-credetials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          aws-region: us-east-1
+
+      - name: Login to Elastic Container Registry (ECR) Public
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v18
+        with:
+          registry-type: public
+
+      - name: Build, tag, and push docker image to ECR Public
+        working-directory: ./backend
+        env:
+          DOCKER_REGISTRY: public.ecr.aws/e8u7j0e0
+          APP_NAME: web_app
+          APP_VERSION: 6
+        run: |
+          docker build -t $DOCKER_REGISTRY/$APP_NAME:$APP_VERSION -t $DOCKER_REGISTRY/$APP_NAME:latest .
+          docker push $DOCKER_REGISTRY/$APP_NAME:$APP_VERSION
+          docker push $DOCKER_REGISTRY/$APP_NAME:latest
+          
       #- name: Generate deployment backend package
       #  working-directory: ./backend
       #  run: zip -r deploy.zip * -x "**node_modules**"
@@ -74,8 +90,6 @@ jobs:
           replace-with: "-"
           flags: "g"
 
-      - name: Run shell script to build the docker images
-        run: sudo ./backend/docker-deployment.sh $APP_VERSION ${{secrets.ECR_PASSWARD}}
 
       - name: Beanstalk Deploy web app
         uses: einaregilsson/beanstalk-deploy@v18
@@ -85,7 +99,7 @@ jobs:
           application_name: web-app
           environment_name: Webapp-env
           region: ap-southeast-1
-          version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Usingfile  timestamp for the versions
+          version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using file  timestamp for the versions
           deployment_package: ./backend/Dockerrun.aws.json
 
       - name: Installing NPM in the worker
