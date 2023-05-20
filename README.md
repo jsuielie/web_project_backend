@@ -25,4 +25,3 @@ FreeCardBoard is a social networking website that allows users to create account
 ![Alt system design](./design_of_the_system.jpg)
 
 The provided system design diagram illustrates the overall architecture and flow of FreeBoardCard
-
